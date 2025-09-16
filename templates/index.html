@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>To-Do App</title>
+</head>
+<body>
+    <h1>To-Do App</h1>
+    <input type="text" id="taskInput" placeholder="New task">
+    <button onclick="addTask()">Add</button>
+    <ul id="taskList"></ul>
+
+    <script>
+        const backendUrl = "https://todo-backend.onrender.com"; // Replace after deploy
+
+        async function loadTasks() {
+            let res = await fetch(backendUrl + "/tasks");
+            let tasks = await res.json();
+            let list = document.getElementById("taskList");
+            list.innerHTML = "";
+            tasks.forEach(t => {
+                let li = document.createElement("li");
+                li.textContent = t.title + (t.done ? " ✅" : "");
+                li.onclick = () => markDone(t.id);
+                list.appendChild(li);
+            });
+        }
+
+        async function addTask() {
+            let task = document.getElementById("taskInput").value;
+            await fetch(backendUrl + "/tasks", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({title: task})
+            });
+            document.getElementById("taskInput").value = "";
+            loadTasks();
+        }
+
+        async function markDone(id) {
+            await fetch(backendUrl + "/tasks/" + id, {method: "PUT"});
+            loadTasks();
+        }
+
+        window.onload = loadTasks;
+    </script>
+</body>
+</html>
