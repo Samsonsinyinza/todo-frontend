@@ -5,28 +5,38 @@
 </head>
 <body>
     <h1>To-Do App</h1>
+
     <input type="text" id="taskInput" placeholder="New task">
     <button onclick="addTask()">Add</button>
+
     <ul id="taskList"></ul>
 
     <script>
-        const backendUrl = "https://todo-backend.onrender.com"; // Replace after deploy
+        // Backend URL on Render (update this after backend deploy)
+        const backendUrl = "https://todo-backend.onrender.com";
 
         async function loadTasks() {
             let res = await fetch(backendUrl + "/tasks");
             let tasks = await res.json();
             let list = document.getElementById("taskList");
             list.innerHTML = "";
+            if(tasks.length === 0){
+                list.innerHTML = "<li>No tasks yet!</li>";
+            }
             tasks.forEach(t => {
                 let li = document.createElement("li");
-                li.textContent = t.title + (t.done ? " ✅" : "");
-                li.onclick = () => markDone(t.id);
+                li.textContent = t.title + " ";
+                let delBtn = document.createElement("button");
+                delBtn.textContent = "Delete";
+                delBtn.onclick = () => deleteTask(t.id);
+                li.appendChild(delBtn);
                 list.appendChild(li);
             });
         }
 
         async function addTask() {
             let task = document.getElementById("taskInput").value;
+            if (!task) return;
             await fetch(backendUrl + "/tasks", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
@@ -36,8 +46,8 @@
             loadTasks();
         }
 
-        async function markDone(id) {
-            await fetch(backendUrl + "/tasks/" + id, {method: "PUT"});
+        async function deleteTask(id) {
+            await fetch(backendUrl + "/tasks/" + id, { method: "DELETE" });
             loadTasks();
         }
 
